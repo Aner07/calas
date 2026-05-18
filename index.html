@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <title>Calas Baleares — Las Mejores Calas del Mediterráneo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="css/index.css"/>
+</head>
+<body>
+
+
+
+<nav id="nav">
+  <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    Calas <span>Baleares</span>
+  </div>
+
+  <div class="nav-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="#map-section">Mapa</a></li>
+    <li><a href="#calas-section">Calas</a></li>
+    <li><a href="#stats-section">Datos</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+     <video autoplay muted loop playsinline class="hero-video">
+    <source src="assets/videos_calas.mp4" type="video/mp4">
+  </video>
+
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Islas Baleares · Mediterráneo</p>
+    <h1 class="hero-title">Las mejores<br><em>calas</em></h1>
+    <p class="hero-subtitle">Un viaje por las aguas más cristalinas del Mediterráneo<br>Mallorca · Menorca · Ibiza · Formentera</p>
+    <div class="island-pills">
+      <span class="island-pill" data-island="mallorca" onclick="filterAndScroll('mallorca')">Mallorca</span>
+      <span class="island-pill" data-island="menorca" onclick="filterAndScroll('menorca')">Menorca</span>
+      <span class="island-pill" data-island="ibiza" onclick="filterAndScroll('ibiza')">Ibiza</span>
+      <span class="island-pill" data-island="formentera" onclick="filterAndScroll('formentera')">Formentera</span>
+    </div>
+    <div class="hero-scroll" onclick="document.getElementById('map-section').scrollIntoView({behavior:'smooth'})">
+      <span>Explorar</span><div class="scroll-line"></div>
+    </div>
+  </div>
+  <div class="hero-waves">
+    <svg viewBox="0 0 1440 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,80 C240,160 480,0 720,80 C960,160 1200,0 1440,80 L1440,180 L0,180 Z" fill="#fdfaf6" opacity=".9"/></svg>
+    <svg viewBox="0 0 1440 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,100 C360,20 720,160 1080,60 C1260,10 1380,120 1440,100 L1440,180 L0,180 Z" fill="#fdfaf6" opacity=".5"/></svg>
+  </div>
+</section>
+
+<section id="map-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Ubicaciones</p>
+    <h2 class="section-title">Todas las calas <em>en el mapa</em></h2>
+    <div class="section-line"></div>
+  </div>
+  <div id="map"></div>
+</section>
+
+<section id="calas-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Descubrir</p>
+    <h2 class="section-title">Las calas más <em>especiales</em></h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all" onclick="filterCala(this,'all')">Todas las islas</button>
+    <button class="filter-btn" data-filter="mallorca" onclick="filterCala(this,'mallorca')">Mallorca</button>
+    <button class="filter-btn" data-filter="menorca" onclick="filterCala(this,'menorca')">Menorca</button>
+    <button class="filter-btn" data-filter="ibiza" onclick="filterCala(this,'ibiza')">Ibiza</button>
+    <button class="filter-btn" data-filter="formentera" onclick="filterCala(this,'formentera')">Formentera</button>
+  </div>
+  <div class="controls-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Buscar cala…" oninput="applyFilters()">
+    </div>
+    <select class="sort-select" id="sort-select" onchange="applyFilters()">
+      <option value="default">Orden por defecto</option>
+      <option value="rating-desc">Mayor valoración</option>
+      <option value="rating-asc">Menor valoración</option>
+      <option value="name-asc">Nombre A–Z</option>
+      <option value="name-desc">Nombre Z–A</option>
+      <option value="difficulty-easy">Más fácil primero</option>
+    </select>
+    <span class="results-count" id="results-count"></span>
+  </div>
+  <div class="calas-grid" id="calas-grid"></div>
+</section>
+
+<section class="stats-section" id="stats-section">
+  <div class="stat-block"><div class="stat-number">4<span class="stat-unit"> islas</span></div><div class="stat-desc">Archipiélago balear</div></div>
+  <div class="stat-block"><div class="stat-number">24<span class="stat-unit">+</span></div><div class="stat-desc">Calas seleccionadas</div></div>
+  <div class="stat-block"><div class="stat-number">1470<span class="stat-unit"> km</span></div><div class="stat-desc">Kilómetros de costa</div></div>
+  <div class="stat-block"><div class="stat-number">27°</div><div class="stat-desc">Temperatura media verano</div></div>
+</section>
+
+<footer>
+  <div class="footer-logo">Calas <span>Baleares</span></div>
+  <p class="footer-text">Las calas más bonitas del Mediterráneo occidental<br>Mallorca · Menorca · Ibiza · Formentera<br></p>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-hero"><img id="modal-img" src="" alt=""><div class="modal-hero-overlay"></div>
+      <div class="modal-hero-info"><div class="modal-island-badge" id="modal-badge"></div><h2 class="modal-title" id="modal-title"></h2></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta" id="modal-meta"></div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-features" id="modal-features"></div>
+      <div class="modal-gallery-section">
+        <p class="gallery-label">Galería de fotos <span class="gallery-source-badge" id="gallery-source">Unsplash</span></p>
+        <div id="modal-gallery-content"></div>
+      </div>
+      <div class="modal-tips"><p class="tips-title">Consejo de visita</p><p class="tips-text" id="modal-tips"></p></div>
+      <div class="modal-map-mini" id="modal-map-mini"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOnBg(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</button>
+  <p class="lightbox-caption" id="lightbox-caption"></p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+
+  // Abrir / cerrar con hamburguesa
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    navLinks.classList.toggle('active');
+    toggle.classList.toggle('active');
+  });
+
+  // Cerrar al hacer click en un enlace
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('active');
+      toggle.classList.remove('active');
+    });
+  });
+
+  // Cerrar al hacer click fuera del menú
+  document.addEventListener('click', (e) => {
+    const clickInsideMenu = navLinks.contains(e.target);
+    const clickOnToggle = toggle.contains(e.target);
+
+    if (!clickInsideMenu && !clickOnToggle) {
+      navLinks.classList.remove('active');
+      toggle.classList.remove('active');
+    }
+  });
+
+  // Cerrar con ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      navLinks.classList.remove('active');
+      toggle.classList.remove('active');
+    }
+  });
+});
+</script>
+
+<script>
+const CALAS = [
+{
+  id: 1,
+  name: "Cala Mitjana",
+  island: "mallorca",
+  location: "Felanitx, Mallorca",
+  lat: 39.3708,
+  lng: 3.2346,
+  rating: 4.8,
+  placeId: "ChIJBXB1sHlRlhIR-ELtoWgudk4",
+
+  img: "/assets/calas/cala-mitjana/3.webp",
+  gallery: [
+    "/assets/calas/cala-mitjana/1.webp",
+    "/assets/calas/cala-mitjana/2.webp",
+    "/assets/calas/cala-mitjana/3.webp"
+  ],
+
+  shortDesc: "Cala escondida de aguas turquesas rodeada de vegetación mediterránea y ambiente tranquilo incluso en verano.",
+  fullDesc: "Cala Mitjana es una de las joyas más relajadas de Mallorca...",
+  tags: ["Aguas cristalinas", "Snorkel", "Naturaleza", "Tranquila"],
+  difficulty: "Media",
+  difficultyNum: 2,
+  access: "15-20 min a pie",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Turquesa cristalino",
+  tip: "Lleva agua y sombrilla...",
+  features: [
+    { icon: "🏊", text: "Ideal para nadar" },
+    { icon: "🤿", text: "Snorkel" },
+    { icon: "🌿", text: "Entorno natural" },
+    { icon: "📸", text: "Muy fotogénica" },
+    { icon: "🥾", text: "Acceso caminando" },
+    { icon: "🧘", text: "Ambiente relajado" }
+  ]
+},
+
+{
+  id: 2,
+  name: "Cala Màrmols",
+  island: "mallorca",
+  location: "Santanyí, Mallorca",
+  lat: 39.2892,
+  lng: 3.1248,
+  rating: 4.9,
+  placeId: "ChIJhR0Xt6-qlxIRB-G7YQ78h0w",
+
+  img: "/assets/calas/cala-marmols/1.webp",
+  gallery: [
+    "/assets/calas/cala-marmols/1.webp",
+    "/assets/calas/cala-marmols/2.webp",
+    "/assets/calas/cala-marmols/3.webp"
+  ],
+
+  shortDesc: "Una de las calas más salvajes y paradisíacas de Mallorca...",
+  fullDesc: "Cala Màrmols destaca por su aislamiento...",
+  tags: ["Virgen", "Acantilados", "Snorkel", "Agua turquesa"],
+  difficulty: "Alta",
+  difficultyNum: 3,
+  access: "45 min a pie o barco",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Azul caribeño",
+  tip: "Lleva comida y agua suficiente...",
+  features: [
+    { icon: "🏊", text: "Agua cristalina" },
+    { icon: "🤿", text: "Snorkel brutal" },
+    { icon: "🥾", text: "Ruta natural" },
+    { icon: "📸", text: "Paisaje espectacular" },
+    { icon: "🌿", text: "Cala virgen" },
+    { icon: "⛵", text: "Acceso en barco" }
+  ]
+},
+
+{
+  id: 3,
+  name: "Cala S'Amarador",
+  island: "mallorca",
+  location: "Parque Natural de Mondragó, Mallorca",
+  lat: 39.3365,
+  lng: 3.1882,
+  rating: 4.7,
+  placeId: "ChIJDwusf6VWlhIRTnPBknkLnWo",
+
+  img: "/assets/calas/cala-samarador/1.webp",
+  gallery: [
+    "/assets/calas/cala-samarador/1.webp",
+    "/assets/calas/cala-samarador/2.webp",
+    "/assets/calas/cala-samarador/3.webp"
+  ],
+
+  shortDesc: "Arena blanca y agua turquesa dentro de un entorno natural...",
+  fullDesc: "S'Amarador ofrece el equilibrio perfecto...",
+  tags: ["Arena blanca", "Parque Natural", "Relax", "Aguas claras"],
+  difficulty: "Baja",
+  difficultyNum: 1,
+  access: "Parking + 5 min a pie",
+  bestTime: "Junio · Julio",
+  waterColor: "Turquesa claro",
+  tip: "Perfecta para pasar el día entero...",
+  features: [
+    { icon: "🏊", text: "Perfecta para nadar" },
+    { icon: "🌿", text: "Parque Natural" },
+    { icon: "👨‍👩‍👧", text: "Familiar" },
+    { icon: "📸", text: "Paisaje top" },
+    { icon: "🥾", text: "Senderos cercanos" },
+    { icon: "🅿️", text: "Parking" }
+  ]
+},
+
+{
+  id: 4,
+  name: "S'Almonia",
+  island: "mallorca",
+  location: "Santanyí, Mallorca",
+  lat: 39.3134,
+  lng: 3.1295,
+  rating: 4.8,
+  placeId: "ChIJfdqshRhVlhIRmE9cdU2phnY",
+
+  img: "/assets/calas/cala-almonia/1.webp",
+  gallery: [
+    "/assets/calas/cala-almonia/1.webp",
+    "/assets/calas/cala-almonia/2.webp",
+    "/assets/calas/cala-almonia/3.webp"
+  ],
+
+  shortDesc: "Zona rocosa con agua turquesa intensa...",
+  fullDesc: "S'Almonia es famosa por sus casitas de pescadores...",
+  tags: ["Snorkel", "Rocas", "Casas de pescadores", "Agua cristalina"],
+  difficulty: "Media",
+  difficultyNum: 2,
+  access: "Escaleras y roca",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Turquesa intenso",
+  tip: "Lleva escarpines...",
+  features: [
+    { icon: "🤿", text: "Snorkel increíble" },
+    { icon: "📸", text: "Muy fotogénica" },
+    { icon: "🌊", text: "Agua transparente" },
+    { icon: "🪨", text: "Zona rocosa" },
+    { icon: "🧘", text: "Ambiente tranquilo" },
+    { icon: "🏊", text: "Saltos al agua" }
+  ]
+},
+
+{
+  id: 5,
+  name: "Caló d'en Monjo",
+  island: "mallorca",
+  location: "Calvià, Mallorca",
+  lat: 39.5231,
+  lng: 2.4782,
+  rating: 4.7,
+  placeId: "ChIJS69-xiQnmBIR0orlScbYSlc",
+
+  img: "/assets/calas/cala-den-monjo/1.webp",
+  gallery: [
+    "/assets/calas/cala-den-monjo/1.webp",
+    "/assets/calas/cala-den-monjo/2.webp",
+    "/assets/calas/cala-den-monjo/3.webp"
+  ],
+
+  shortDesc: "Pequeña cala escondida con agua cristalina...",
+  fullDesc: "Caló d'en Monjo es una cala rocosa...",
+  tags: ["Escondida", "Relax", "Snorkel", "Naturaleza"],
+  difficulty: "Media",
+  difficultyNum: 2,
+  access: "10 min caminando",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Azul cristalino",
+  tip: "Muy buena opción para atardecer...",
+  features: [
+    { icon: "🏊", text: "Baño tranquilo" },
+    { icon: "🤿", text: "Snorkel" },
+    { icon: "🥾", text: "Acceso natural" },
+    { icon: "📸", text: "Paisaje bonito" },
+    { icon: "🌿", text: "Poca urbanización" },
+    { icon: "🧘", text: "Muy relajada" }
+  ]
+},
+
+{
+  id: 6,
+  name: "Caló des Moro",
+  island: "mallorca",
+  location: "Santanyí, Mallorca",
+  lat: 39.3142,
+  lng: 3.1299,
+  rating: 4.8,
+  placeId: "ChIJL6zJkxxVlhIR6P0Qf8W9Y0Q",
+
+  img: "/assets/calas/cala-des-moro/1.webp",
+  gallery: [
+    "/assets/calas/cala-des-moro/1.webp",
+    "/assets/calas/cala-des-moro/2.webp",
+    "/assets/calas/cala-des-moro/3.webp"
+  ],
+
+  shortDesc: "La cala más icónica de Mallorca...",
+  fullDesc: "Caló des Moro es probablemente la cala más fotografiada...",
+  tags: ["Agua turquesa", "Acantilados", "Virgen", "Paisaje espectacular"],
+  difficulty: "Media",
+  difficultyNum: 2,
+  access: "10-15 min a pie + escaleras",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Turquesa caribeño",
+  tip: "Llega antes de las 8:30h...",
+  features: [
+    { icon: "🏊", text: "Agua cristalina" },
+    { icon: "🤿", text: "Snorkel" },
+    { icon: "📸", text: "Spot icónico" },
+    { icon: "🪨", text: "Acantilados" },
+    { icon: "🌿", text: "Entorno natural" },
+    { icon: "🥾", text: "Acceso caminando" }
+  ]
+},
+{
+  id: 7,
+  name: "Cala Saona",
+  island: "formentera",
+  location: "Formentera, Islas Baleares",
+  lat: 38.6677,
+  lng: 1.4312,
+  rating: 4.9,
+  placeId: "",
+
+  img: "/assets/calas/cala-saona/2.webp",
+  gallery: [
+    "/assets/calas/cala-saona/1.webp",
+    "/assets/calas/cala-saona/2.webp",
+    "/assets/calas/cala-saona/3.webp"
+  ],
+
+  shortDesc: "La mejor cala de Formentera para ver el atardecer con agua tranquila y ambiente familiar.",
+  fullDesc: "Cala Saona es una de las calas más icónicas de Formentera, famosa por sus atardeceres espectaculares sobre el mar. Sus aguas tranquilas y poco profundas la hacen ideal para familias y baño relajado durante todo el día.",
+
+  tags: ["Sunset", "Familiar", "Relax", "Agua cristalina"],
+  difficulty: "Baja",
+  difficultyNum: 1,
+  access: "Parking + 5 min a pie",
+  bestTime: "Junio · Octubre",
+  waterColor: "Turquesa suave",
+  tip: "El mejor momento es 1 hora antes del atardecer.",
+
+  features: [
+    { icon: "🌅", text: "Mejor sunset de Formentera" },
+    { icon: "👨‍👩‍👧", text: "Ideal familias" },
+    { icon: "🏊", text: "Baño tranquilo" },
+    { icon: "📸", text: "Muy fotogénica" },
+    { icon: "🤿", text: "Snorkel suave" },
+    { icon: "🧘", text: "Ambiente relajado" }
+  ]
+},
+{
+  id: 8,
+  name: "Ses Illetes",
+  island: "formentera",
+  location: "Parque Natural de Ses Salines, Formentera",
+  lat: 38.7433,
+  lng: 1.4345,
+  rating: 4.9,
+  placeId: "",
+
+  img: "/assets/calas/ses-illetes/1.webp",
+  gallery: [
+    "/assets/calas/ses-illetes/1.webp",
+    "/assets/calas/ses-illetes/2.webp",
+    "/assets/calas/ses-illetes/3.webp"
+  ],
+
+  shortDesc: "La playa más famosa de Formentera con agua caribeña y arena blanca.",
+  fullDesc: "Ses Illetes es considerada una de las mejores playas del mundo por su arena blanca y su agua turquesa extremadamente clara. Está dentro de un parque natural protegido, lo que mantiene su belleza intacta.",
+
+  tags: ["Caribe", "Arena blanca", "Turquesa", "Paradisiaca"],
+  difficulty: "Baja",
+  difficultyNum: 1,
+  access: "Parking + acceso corto",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Azul cristalino",
+
+  tip: "Muy masificada en verano, ve temprano.",
+
+  features: [
+    { icon: "🏝️", text: "Playa icónica" },
+    { icon: "🌊", text: "Agua tipo Caribe" },
+    { icon: "📸", text: "Spot top mundial" },
+    { icon: "👨‍👩‍👧", text: "Familiar" },
+    { icon: "🤿", text: "Snorkel fácil" },
+    { icon: "🧘", text: "Relax visual" }
+  ]
+},
+{
+  id: 9,
+  name: "Caló des Mort",
+  island: "formentera",
+  location: "Formentera, Islas Baleares",
+  lat: 38.6742,
+  lng: 1.5203,
+  rating: 4.8,
+  placeId: "",
+
+  img: "/assets/calas/des-mort/1.webp",
+  gallery: [
+    "/assets/calas/des-mort/1.webp",
+    "/assets/calas/des-mort/2.webp",
+    "/assets/calas/des-mort/3.webp"
+  ],
+
+  shortDesc: "Pequeña cala escondida entre rocas con agua increíblemente transparente.",
+  fullDesc: "Caló des Mort es una de las calas más salvajes de Formentera. Su pequeño tamaño y acceso algo complicado hacen que conserve un ambiente natural y muy fotogénico.",
+
+  tags: ["Virgen", "Rocas", "Snorkel", "Fotogénica"],
+  difficulty: "Media",
+  difficultyNum: 2,
+  access: "10-15 min a pie + roca",
+  bestTime: "Junio · Septiembre",
+  waterColor: "Azul cristalino",
+
+  tip: "Muy pequeña, llega temprano o se llena.",
+
+  features: [
+    { icon: "📸", text: "Muy fotogénica" },
+    { icon: "🤿", text: "Snorkel top" },
+    { icon: "🪨", text: "Zona rocosa" },
+    { icon: "🌊", text: "Agua transparente" },
+    { icon: "🧘", text: "Ambiente natural" },
+    { icon: "🏊", text: "Baño en rocas" }
+  ]
+}
+];
+
+const ISLAND_COLORS={mallorca:'#d4845a',menorca:'#5a9abd',ibiza:'#9b6ab8',formentera:'#5aaa7a'};
+const ISLAND_NAMES={mallorca:'Mallorca',menorca:'Menorca',ibiza:'Ibiza',formentera:'Formentera'};
+
+let currentFilter='all', currentSort='default', currentSearch='';
+let GOOGLE_API_KEY=localStorage.getItem('gplaces_key')||'';
+let lightboxImages=[], lightboxIndex=0;
+
+// Particles
+const pEl=document.getElementById('particles');
+for(let i=0;i<40;i++){const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*8}s;animation-duration:${6+Math.random()*6}s;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;opacity:${0.2+Math.random()*0.4}`;pEl.appendChild(p);}
+
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',window.scrollY>60));
+
+// API panel
+function toggleApiPanel(){document.getElementById('api-panel').classList.toggle('open');}
+function saveApiKey(){
+  const k=document.getElementById('places-api-key').value.trim();
+  const s=document.getElementById('api-status');
+  if(!k||!k.startsWith('AIza')){s.className='api-status error';s.textContent='La API key parece inválida. Debe empezar por "AIza…"';return;}
+  GOOGLE_API_KEY=k;localStorage.setItem('gplaces_key',k);
+  s.className='api-status success';s.textContent='✓ API key guardada. Las fotos de Google Places se cargarán en los modales.';
+  updateApiBtn();
+}
+function clearApiKey(){
+  GOOGLE_API_KEY='';localStorage.removeItem('gplaces_key');
+  document.getElementById('places-api-key').value='';
+  const s=document.getElementById('api-status');s.className='api-status error';s.textContent='API desconectada. Usando imágenes de Unsplash.';
+  updateApiBtn();
+}
+function updateApiBtn(){
+  const b=document.getElementById('nav-api-btn');
+  if(GOOGLE_API_KEY){b.textContent='✓ Places conectado';b.classList.add('connected');}
+  else{b.textContent='⚙ Google Places';b.classList.remove('connected');}
+}
+if(GOOGLE_API_KEY){document.getElementById('places-api-key').value=GOOGLE_API_KEY;updateApiBtn();}
+
+// Filter/sort/search
+function getFilteredSorted(){
+  let list=[...CALAS];
+  if(currentFilter!=='all')list=list.filter(c=>c.island===currentFilter);
+  if(currentSearch){const q=currentSearch.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q)||c.location.toLowerCase().includes(q)||c.tags.some(t=>t.toLowerCase().includes(q))||c.shortDesc.toLowerCase().includes(q));}
+  if(currentSort==='rating-desc')list.sort((a,b)=>b.rating-a.rating);
+  else if(currentSort==='rating-asc')list.sort((a,b)=>a.rating-b.rating);
+  else if(currentSort==='name-asc')list.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(currentSort==='name-desc')list.sort((a,b)=>b.name.localeCompare(a.name));
+  else if(currentSort==='difficulty-easy')list.sort((a,b)=>a.difficultyNum-b.difficultyNum);
+  return list;
+}
+function applyFilters(){
+  currentSearch=document.getElementById('search-input').value.trim();
+  currentSort=document.getElementById('sort-select').value;
+  buildGrid();
+}
+function filterCala(btn,filter){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');currentFilter=filter;applyFilters();
+}
+function filterAndScroll(island){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===island));
+  currentFilter=island;applyFilters();
+  setTimeout(()=>document.getElementById('calas-section').scrollIntoView({behavior:'smooth'}),100);
+}
+
+// Grid
+function buildGrid(){
+  const grid=document.getElementById('calas-grid');
+  const list=getFilteredSorted();
+  const count=document.getElementById('results-count');
+  count.textContent=list.length===CALAS.length?'':list.length+' resultado'+(list.length!==1?'s':'');
+  grid.innerHTML='';
+  if(!list.length){grid.innerHTML='<div class="no-results"><div class="no-results-icon">🔍</div><p class="no-results-text">No se encontraron calas para "'+currentSearch+'"</p></div>';return;}
+  list.forEach((c,i)=>{
+    const card=document.createElement('div');
+    card.className='cala-card';card.style.opacity='0';card.style.transform='translateY(20px)';
+    card.innerHTML=`<div class="cala-img-wrapper"><img class="cala-img" src="${c.img}" alt="${c.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800'"><span class="cala-island-badge badge-${c.island}">${ISLAND_NAMES[c.island]}</span><span class="cala-rating">${c.rating} ★</span>${c.placeId?'<span class="places-badge">📍 Places</span>':''}</div><div class="cala-body"><h3 class="cala-name">${c.name}</h3><p class="cala-location">${c.location}</p><p class="cala-desc">${c.shortDesc}</p><div class="cala-tags">${c.tags.slice(0,3).map(t=>`<span class="cala-tag">${t}</span>`).join('')}</div><div class="cala-footer"><div class="cala-stats"><div class="cala-stat"><span class="stat-label">Acceso</span><span class="stat-value">${c.difficulty}</span></div><div class="cala-stat"><span class="stat-label">Mejor época</span><span class="stat-value" style="font-size:11px">${c.bestTime}</span></div></div><div class="cala-cta"><svg viewBox="0 0 16 16"><path d="M1 8h14M9 2l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div></div>`;
+    card.addEventListener('click',()=>openModal(c));
+    grid.appendChild(card);
+    setTimeout(()=>{card.style.transition='opacity .4s ease,transform .4s ease';card.style.opacity='1';card.style.transform='translateY(0)';},i*35);
+  });
+}
+
+// Map
+let map, currentMiniMap;
+function initMap(){
+  map=L.map('map',{zoomControl:true,scrollWheelZoom:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB',maxZoom:19}).addTo(map);
+  map.setView([39.5,2.7],8);
+  CALAS.forEach(c=>{
+    const color=ISLAND_COLORS[c.island];
+    const m=L.circleMarker([c.lat,c.lng],{radius:9,fillColor:color,color:'#fff',weight:2,fillOpacity:.9}).addTo(map);
+    m.bindPopup(`<div class="map-popup"><h4>${c.name}</h4><p class="popup-island" style="color:${color}">${ISLAND_NAMES[c.island]}</p><p>${c.shortDesc.substring(0,80)}…</p><a class="popup-btn" onclick="openModalById(${c.id})">Ver detalles</a></div>`,{maxWidth:220});
+  });
+}
+function openModalById(id){const c=CALAS.find(x=>x.id===id);if(c)openModal(c);}
+
+// Google Places photos
+async function fetchPlacesPhotos(placeId,apiKey){
+  try{
+    const url=`https://places.googleapis.com/v1/places/${placeId}?fields=photos&key=${apiKey}`;
+    const res=await fetch(url,{headers:{'X-Goog-Api-Key':apiKey,'X-Goog-FieldMask':'photos'}});
+    if(!res.ok)throw new Error('err');
+    const data=await res.json();
+    if(!data.photos)throw new Error('no photos');
+    return data.photos.slice(0,4).map(p=>`https://places.googleapis.com/v1/${p.name}/media?maxWidthPx=800&key=${apiKey}`);
+  }catch(e){return null;}
+}
+
+function buildGallery(images,src){
+  document.getElementById('gallery-source').textContent=src;
+  lightboxImages=images||[];
+  if(!images||!images.length){document.getElementById('modal-gallery-content').innerHTML='<div class="gallery-error"><span style="font-size:32px">📷</span><span>No hay fotos disponibles</span></div>';return;}
+  const main=images[0];const side=images.slice(1,3);
+  document.getElementById('modal-gallery-content').innerHTML=`<div class="gallery-grid"><div class="gallery-img" onclick="openLightbox(0)"><img src="${main}" alt="Foto principal" loading="lazy"></div><div class="gallery-side">${side.map((img,i)=>`<div class="gallery-img" onclick="openLightbox(${i+1})"><img src="${img}" alt="Foto ${i+2}" loading="lazy"></div>`).join('')}${side.length<2?'<div style="flex:1;background:var(--sand-light);border-radius:10px;"></div>':''}</div></div>`;
+}
+
+// Modal
+async function openModal(c){
+  const ov=document.getElementById('modal-overlay');
+  document.getElementById('modal-img').src=c.img;
+  document.getElementById('modal-title').textContent=c.name;
+  const badge=document.getElementById('modal-badge');
+  badge.textContent=ISLAND_NAMES[c.island];badge.style.background=ISLAND_COLORS[c.island];
+  document.getElementById('modal-meta').innerHTML=`<div class="meta-item"><span class="meta-label">Valoración</span><span class="meta-value">${c.rating} / 5 ★</span></div><div class="meta-item"><span class="meta-label">Dificultad</span><span class="meta-value">${c.difficulty}</span></div><div class="meta-item"><span class="meta-label">Acceso</span><span class="meta-value">${c.access}</span></div><div class="meta-item"><span class="meta-label">Mejor época</span><span class="meta-value">${c.bestTime}</span></div><div class="meta-item"><span class="meta-label">Color del agua</span><span class="meta-value">${c.waterColor}</span></div>`;
+  document.getElementById('modal-desc').textContent=c.fullDesc;
+  document.getElementById('modal-features').innerHTML=c.features.map(f=>`<div class="feature-item"><span class="feature-icon">${f.icon}</span><span class="feature-text">${f.text}</span></div>`).join('');
+  document.getElementById('modal-tips').textContent=c.tip;
+  ov.classList.add('open');document.body.style.overflow='hidden';
+  document.getElementById('modal-gallery-content').innerHTML='<div class="gallery-loading"><div class="gallery-spinner"></div></div>';
+  let photos=null;
+  if(GOOGLE_API_KEY&&c.placeId)photos=await fetchPlacesPhotos(c.placeId,GOOGLE_API_KEY);
+  buildGallery(photos&&photos.length?photos:c.gallery, photos&&photos.length?'Google Places':'Unsplash');
+  const miniEl=document.getElementById('modal-map-mini');miniEl.innerHTML='';
+  setTimeout(()=>{
+    if(currentMiniMap){currentMiniMap.remove();currentMiniMap=null;}
+    currentMiniMap=L.map(miniEl,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:16}).addTo(currentMiniMap);
+    currentMiniMap.setView([c.lat,c.lng],13);
+    L.circleMarker([c.lat,c.lng],{radius:10,fillColor:ISLAND_COLORS[c.island],color:'#fff',weight:3,fillOpacity:1}).addTo(currentMiniMap).bindPopup(c.name).openPopup();
+  },80);
+}
+
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';}
+
+// Lightbox
+function openLightbox(i){lightboxIndex=i;document.getElementById('lightbox-img').src=lightboxImages[i];document.getElementById('lightbox-caption').textContent=(i+1)+' / '+lightboxImages.length;document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+function closeLightboxOnBg(e){if(e.target===document.getElementById('lightbox'))closeLightbox();}
+function lightboxNav(d){lightboxIndex=(lightboxIndex+d+lightboxImages.length)%lightboxImages.length;document.getElementById('lightbox-img').src=lightboxImages[lightboxIndex];document.getElementById('lightbox-caption').textContent=(lightboxIndex+1)+' / '+lightboxImages.length;}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeLightbox();closeModalDirect();}
+  if(e.key==='ArrowLeft')lightboxNav(-1);
+  if(e.key==='ArrowRight')lightboxNav(1);
+});
+
+buildGrid();
+initMap();
+</script>
+</body>
+</html>
